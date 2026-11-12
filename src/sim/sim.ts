@@ -145,7 +145,7 @@ export class Sim {
     h.maxMana = Math.round(H.manaBase + int * H.manaPerInt + mana);
     if (u.alive && oldMax > 0) { u.hp = Math.max(1, Math.min(u.maxHp, u.hp + (u.maxHp - oldMax))); h.mana = Math.max(0, Math.min(h.maxMana, h.mana + (h.maxMana - oldMana))); }
     u.dmg = dmg + (d.primary === 'str' ? str : d.primary === 'agi' ? agi : int);
-    u.armor = agi * H.armorPerAgi + armor;
+    u.armor = agi * H.armorPerAgi + armor + (d.range < H.meleeRange ? H.meleeArmor : 0);
     u.atkInt = d.atkInt / (1 + agi * H.asPerAgi + as);
     u.speed = d.speed + ms;
     h.spellPower = 1 + int * H.spellPerInt + sp; h.lifesteal = ls;
@@ -727,7 +727,7 @@ export class Sim {
         }
         case 'summon': {
           if (!c.src) break;
-          const k = 1 + 0.1 * (c.lvl - 1);
+          const k = 1 + 0.07 * (c.lvl - 1);
           for (let i = 0; i < (e.count ?? 1); i++) {
             const a = c.src.facing + (i - ((e.count ?? 1) - 1) / 2) * 0.9;
             const u = this.spawn(e.unit!, c.team, c.src.x + Math.cos(a) * 44, c.src.y + Math.sin(a) * 44, laneOf(c.src.x));

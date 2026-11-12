@@ -1,8 +1,7 @@
 node_modules
 dist
 build
-release/*
-!release/*.zip
+release
 *.log
 .DS_Store
 shots

@@ -115,7 +115,7 @@ export class Bot {
     const overflow = e >= C.essence.max - 0.3;
     if (!followUp && !overflow && e < tu.saveAt) return;
     const lane = followUp ? followUp.lane : this.pushLane(sc);
-    const units = hand.filter(h => h.c.type === 'troop' || h.c.type === 'champion');
+    const units = hand.filter(h => h.c.type === 'troop' || h.c.type === 'champion' || (h.c.unit && UNITS[h.c.unit].spawner)); // spawner buildings are pushed with, too
     if (!units.length) {
       if (overflow) { // only buildings / spells in hand: cycle the cheapest building at the front tower
         const b = hand.filter(h => h.c.type === 'building').sort((a, b2) => a.c.cost - b2.c.cost)[0];
@@ -137,7 +137,7 @@ export class Bot {
       else pick = units.sort((a, b) => b.c.cost - a.c.cost)[0];
     }
     const d = UNITS[pick.c.unit!];
-    const isFront = pick.c.role === 'tank' || pick.c.role === 'siege' || d.range < 100;
+    const isFront = (pick.c.role === 'tank' || pick.c.role === 'siege' || d.range < 100) && pick.c.type !== 'building';
     const y = isFront ? fwdY : fwdY + this.back() * 130;
     if (play(pick, M.laneX[lane] + (this.rng.next() - 0.5) * 70, y)) {
       if (pick.c.role === 'tank') this.pendingFollow = { lane, until: s.tick + 60 * 7 };
@@ -435,11 +435,12 @@ export class Bot {
       const reach = ab.cast === 'self' ? R : ab.range + R * 0.5;
       switch (ab.ai) {
         case 'nuke': case 'stun': {
-          if (seeEh && ehD <= ab.range + 120 && !this.inEnemyTowerRange(eh.x, eh.y, 0) || (seeEh && ehD <= ab.range && eh.hp < eh.maxHp * 0.4)) {
+          const leap = ab.effects.some(e => e.t === 'blink');
+          if (seeEh && ehD <= ab.range + 120 && !this.inEnemyTowerRange(eh.x, eh.y, leap ? 60 : 0) && (!leap || (hpF > 0.6 && eh.hp / eh.maxHp < hpF + 0.1)) || (seeEh && ehD <= ab.range && eh.hp < eh.maxHp * (leap ? 0.2 : 0.4))) {
             if (ult && eh.hp > eh.maxHp * 0.75) break;
             return cast(i, eh.x, eh.y, eh.id);
           }
-          if (!ult && manaF > 0.75 && ab.ai === 'nuke') { // farm with spare mana
+          if (!ult && manaF > 0.75 && ab.ai === 'nuke' && !ab.effects.some(e => e.t === 'blink')) { // farm with spare mana (never by leaping in)
             const t = getFoes().filter(u => !u.hero && dist(u.x, u.y, me.x, me.y) <= ab.range + 60 && u.hp > 120).sort((a, b) => b.maxHp - a.maxHp)[0];
             if (t) return cast(i, t.x, t.y, t.id);
           }
@@ -450,6 +451,7 @@ export class Bot {
             if (ab.cast === 'self' && ehD > R * 0.85) break;
             return cast(i, eh.x, eh.y, eh.id);
           }
+          if (ab.cast === 'self' && (ab.effects[0].structMult ?? 0) >= 1 && manaF > 0.35 && s.units.some(u => u.alive && u.team === this.e && u.structure && !u.invuln && dist(u.x, u.y, me.x, me.y) <= R + u.r)) return cast(i, me.x, me.y);
           const list = getFoes().filter(u => !u.hero);
           const need = ult ? 5 : manaF > 0.5 ? 3 : 99;
           if (list.length >= need) {
@@ -478,7 +480,7 @@ export class Bot {
         case 'buff': {
           const fighting = seeEh && ehD < me.range + 150;
           const allies = s.units.filter(u => u.alive && u.team === this.team && !u.structure && !u.hero && u.target && dist(u.x, u.y, me.x, me.y) <= Math.max(R, 1)).length;
-          if (fighting || (R > 0 && allies >= 4) || (R === 0 && me.target && s.byId.get(me.target)?.kind === 'boss')) return cast(i, me.x, me.y);
+          if (fighting || (R > 0 && allies >= 2) || (R === 0 && me.target && s.byId.get(me.target)?.kind === 'boss')) return cast(i, me.x, me.y);
           break;
         }
         case 'summon': {

@@ -176,3 +176,4 @@ body.narrow #minimap { bottom: auto; top: calc(var(--u) * 56); width: calc(var(-
 body.narrow #top { left: calc(var(--u) * 8); transform: none; align-items: flex-start; } body.narrow #toasts { top: calc(var(--u) * 120); }
 body.narrow .deck { grid-template-columns: 1fr; } body.narrow .menu-hero { display: none; } body.narrow .title h1 { font-size: calc(var(--u) * 60); }
 body.narrow #items { grid-template-columns: repeat(3, calc(var(--u) * 24)); } body.narrow #aimhint { bottom: calc(var(--u) * 330); }
+body.narrow #abilrow { flex-wrap: wrap; } body.narrow #items { margin-left: 0; grid-template-columns: repeat(6, calc(var(--u) * 28)); }

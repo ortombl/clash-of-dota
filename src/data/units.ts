@@ -35,8 +35,8 @@ export const UNITS: Record<string, UnitDef> = Object.fromEntries([
   U({ id: 'mortar', name: 'Mortar Nest', kind: 'building', hp: 560, dmg: 62, atkInt: 3.0, range: 520, minRange: 150, speed: 0, r: 22, splash: 92, projSpeed: 300, gold: 30, xp: 40, art: 'mortar', val: 4 }),
   U({ id: 'totem', name: 'Tar Totem', kind: 'building', hp: 520, dmg: 0, atkInt: 1, range: 0, speed: 0, r: 18, armor: 2, slowAura: { pct: 0.35, radius: 220 }, gold: 22, xp: 30, art: 'totem', val: 3 }),
   // --- hero summons ---
-  U({ id: 'sapling', name: 'Sapling', kind: 'troop', hp: 260, dmg: 20, atkInt: 1.0, range: 24, speed: 118, r: 12, gold: 8, xp: 10, art: 'sapling', val: 0.8 }),
-  U({ id: 'elder', name: 'Grove Elder', kind: 'troop', hp: 1100, dmg: 60, atkInt: 1.3, range: 30, speed: 100, r: 22, armor: 3, splash: 50, gold: 30, xp: 40, art: 'elder', val: 4 }),
+  U({ id: 'sapling', name: 'Sapling', kind: 'troop', hp: 200, dmg: 17, atkInt: 1.0, range: 24, speed: 118, r: 12, structMult: 0.5, gold: 8, xp: 10, art: 'sapling', val: 0.8 }),
+  U({ id: 'elder', name: 'Grove Elder', kind: 'troop', hp: 850, dmg: 50, atkInt: 1.3, range: 30, speed: 100, r: 22, armor: 3, splash: 50, structMult: 0.5, gold: 30, xp: 40, art: 'elder', val: 4 }),
   // --- neutrals ---
   U({ id: 'nImp', name: 'Moss Imp', kind: 'neutral', hp: 260, dmg: 16, atkInt: 1.0, range: 24, speed: 120, r: 12, gold: 18, xp: 28, art: 'imp' }),
   U({ id: 'nBrute', name: 'Bog Brute', kind: 'neutral', hp: 620, dmg: 34, atkInt: 1.3, range: 28, speed: 115, r: 18, armor: 2, gold: 44, xp: 60, art: 'brute' }),

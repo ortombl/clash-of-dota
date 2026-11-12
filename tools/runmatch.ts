@@ -4,7 +4,7 @@ import { RNG } from '../src/sim/rng';
 import { HERO_LIST } from '../src/data/heroes';
 import { CONFIG } from '../src/data/config';
 
-export interface MatchResult { sim: Sim; winner: number; time: number; heroes: [string, string]; decks: [string[], string[]] }
+export interface MatchResult { lvl6: number[]; lvl12: number[]; sim: Sim; winner: number; time: number; heroes: [string, string]; decks: [string[], string[]] }
 export function runMatch(seed: number, heroes?: [string, string], decks?: [string[], string[]], diff: [Difficulty, Difficulty] = ['normal', 'normal']): MatchResult {
   const r = new RNG(seed * 7919 + 13);
   const hs = heroes ?? [r.pick(HERO_LIST).id, r.pick(HERO_LIST).id] as [string, string];
@@ -13,8 +13,12 @@ export function runMatch(seed: number, heroes?: [string, string], decks?: [strin
   sim.recordEvents = false;
   const bots = [new Bot(sim, 0, diff[0], seed + 1), new Bot(sim, 1, diff[1], seed + 2)];
   const max = (CONFIG.match.duration + CONFIG.match.suddenDeath + 5) * 60;
-  while (!sim.over && sim.tick < max) { bots[0].update(); bots[1].update(); sim.step(); }
-  return { sim, winner: sim.winner, time: sim.time, heroes: hs, decks: ds };
+  const lvl6 = [0, 0], lvl12 = [0, 0];
+  while (!sim.over && sim.tick < max) {
+    bots[0].update(); bots[1].update(); sim.step();
+    if (sim.tick % 60 === 0) for (const t of [0, 1]) { const L = sim.heroes[t].hero!.level; if (!lvl6[t] && L >= 6) lvl6[t] = sim.time; if (!lvl12[t] && L >= 12) lvl12[t] = sim.time; }
+  }
+  return { lvl6, lvl12, sim, winner: sim.winner, time: sim.time, heroes: hs, decks: ds };
 }
 if (process.argv[1]?.endsWith('runmatch.ts')) {
   const t0 = Date.now();

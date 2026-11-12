@@ -29,7 +29,7 @@ export const CARD_LIST: CardDef[] = [
   { id: 'mendingrain', name: 'Mending Rain', cost: 3, type: 'spell', radius: 165, role: 'utilSpell', desc: 'Heals allies in an area for 5 seconds.',
     effects: [{ t: 'zone', dur: 5, radius: 165, hps: 48 }] },
   { id: 'bulwark', name: 'Bulwark', cost: 3, type: 'spell', radius: 175, role: 'utilSpell', desc: 'Lane shield: allies and structures in the area gain a 6s barrier.',
-    effects: [{ t: 'shield', amt: 360, dur: 6, radius: 175, structures: true }] },
+    effects: [{ t: 'shield', amt: 450, dur: 6, radius: 175, structures: true }] },
   { id: 'rallyhorn', name: 'Rally Horn', cost: 2, type: 'spell', radius: 185, role: 'utilSpell', desc: 'Allies in the area attack and move faster for 6s.',
     effects: [{ t: 'buff', radius: 185, dur: 6, buff: { as: 0.35, ms: 0.25, tag: 'rally' } }] },
   // buildings

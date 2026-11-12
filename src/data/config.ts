@@ -35,7 +35,7 @@ export const CONFIG = {
   },
   hero: {
     maxLevel: 12,
-    xpTable: [0, 100, 220, 360, 520, 700, 900, 1120, 1360, 1620, 1900, 2200],
+    xpTable: [0, 150, 340, 580, 870, 1210, 1600, 2100, 2700, 3400, 4200, 5100],
     passiveXp: 1.6,             // per second
     xpRange: 520,
     denyXpFrac: 0.4,
@@ -44,7 +44,8 @@ export const CONFIG = {
     buybackBase: 100, buybackPerLevel: 25, buybackCooldown: 120,
     hpBase: 250, hpPerStr: 19, manaBase: 80, manaPerInt: 13,
     hpRegenBase: 1.2, hpRegenPerStr: 0.06, manaRegenBase: 1.0, manaRegenPerInt: 0.05,
-    armorPerAgi: 0.16, asPerAgi: 0.012, spellPerInt: 0.007,
+    armorPerAgi: 0.16, meleeArmor: 3, meleeRange: 100, // melee heroes get flat bonus armor
+     asPerAgi: 0.012, spellPerInt: 0.007,
     structureDmgMult: 0.6,      // hero attacks vs structures
     spellStructureMult: 0.3,    // spells / abilities vs structures (unless the effect overrides)
     ultLevel: 6, unlockLevels: [1, 2, 3, 6],
