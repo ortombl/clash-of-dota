@@ -110,6 +110,7 @@ await p.waitForFunction(() => window.__game.sim.suddenDeath, null, { timeout: 24
 await G(p, () => { const g = window.__game; g.auto.speed = 1; g.renderer.cam.follow = false; g.renderer.cam.y = 1500; }); await p.waitForTimeout(1500);
 await p.screenshot({ path: 'shots/11-sudden-death.png' });
 const sd = await G(p, () => { const s = window.__game.sim; return { t: Math.round(s.time), towerHp: Math.round(s.lanes[0][0].t1.hp / s.lanes[0][0].t1.maxHp * 100), vignette: document.querySelector('#vignette').classList.contains('on') }; });
+check('essence rate is tripled after 6:00 (read at 8:00)', await G(p, () => window.__game.sim.essenceMult === 3 && document.querySelector('#essence .mult').textContent === 'x3'));
 check('sudden death begins at 8:00 and structures burn', sd.t >= 480 && sd.t < 490 && sd.towerHp < 100 && sd.vignette, JSON.stringify(sd));
 await G(p, () => { window.__game.auto.speed = 40; });
 await p.waitForFunction(() => window.__game.sim.over, null, { timeout: 240000 });

@@ -1,0 +1,24 @@
+PASS  deck builder shows 6 heroes and 24+ cards
+PASS  match starts from the menu
+PASS  right-click moves the hero  (moved 195)
+PASS  dragging a card deploys it and spends essence
+PASS  last hit: killing blow by the hero pays gold  (lastHits=1 gold 167 -> 193)
+PASS  deny: finishing an allied creep under 50% counts as a deny
+PASS  Q casts an ability (mana spent, cooldown started)
+PASS  shop: component then upgrade, components credited  ({"items":["girdle"],"gold":225})
+PASS  pause freezes the simulation
+PASS  resume and game speed option
+PASS  essence rate doubles at 3:00 with a visible indicator
+PASS  boss spawns at 3:00
+PASS  runes have spawned
+PASS  essence rate triples at 6:00
+PASS  full match played to a result with a post-match stats screen  ({"w":1,"t":278,"rows":13})
+PASS  match length within 8:00 + 2:00 sudden death  (ended at 278s)
+PASS  sudden death begins at 8:00 and structures burn  ({"t":483,"towerHp":37,"vignette":true})
+PASS  sudden death resolves the match by 10:00  ({"w":0,"t":569})
+PASS  interactive tutorial: all 5 steps complete with real input
+PASS  HUD fits inside a 960x540 window
+PASS  HUD fits inside a 480x860 window
+PASS  HUD fits inside a 1920x1080 window
+PASS  10 consecutive bot-vs-bot matches finished in the browser  (392s wall, peak 65 units; winner=1 t=542 | winner=0 t=397 | winner=1 t=556 | winner=1 t=530 | winner=0 t=559 | winner=0 t=307 | winner=0 t=424 | winner=0 t=336 | winner=0 t=462 | winner=0 t=525)
+PASS  zero console errors across the whole run
