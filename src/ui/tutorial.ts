@@ -13,7 +13,7 @@ export class Tutorial {
       enter: g => { const h = g.sim!.heroes[g.team]; this.st.x = h.x; this.st.y = h.y; },
       done: g => { const h = g.sim!.heroes[g.team]; return Math.hypot(h.x - this.st.x, h.y - this.st.y) > 120; } },
     { title: '2 · Last hit for gold', text: 'Gold only comes from the killing blow. Right-click the enemy creep: its bar is gold because your next hit kills it.',
-      enter: g => { const s = g.sim!, h = s.heroes[g.team]; for (let k = 0; k < 2; k++) { const c = s.spawn('creepMelee', 1, h.x - 60 + k * 120, h.y - 150); c.hp = 20 + k * 10; c.stunEnd = s.tick + 60 * 600; c.vis[0] = true; } },
+      enter: g => { const s = g.sim!, h = s.heroes[g.team]; h.hero!.order = null; h.hero!.hold = true; h.target = 0; /* no auto-attack: the player must land the hit */ for (let k = 0; k < 2; k++) { const c = s.spawn('creepMelee', 1, 440 + k * 320, 1925); /* beside the fountain: out of reach of towers and lane creeps */ c.hp = 20 + k * 10; c.stunEnd = s.tick + 60 * 600; c.vis[0] = true; } },
       done: g => g.sim!.teams[g.team].stats.lastHits >= 1 },
     { title: '3 · Cast an ability', text: 'Press Q (or tap the Q button, then a target) to use your first ability. More unlock as you level; R is your ultimate at level 6.', hl: '.abil',
       done: (_g, ev) => ev.some(e => e.type === 'cast' && e.team === 0) },

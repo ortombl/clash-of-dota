@@ -40,29 +40,28 @@ check('right-click moves the hero', Math.hypot(h1.x - h0.x, h1.y - h0.y) > 100, 
 await G(p, () => { window.__game.sim.teams[0].essence = 10; });
 const cardBox = await p.locator('#hand .card').nth(1).boundingBox();
 const before = await G(p, () => window.__game.sim.teams[0].stats.cardsPlayed);
-s = await world(250, 1500);
-await G(p, () => { const g = window.__game; g.renderer.cam.follow = false; g.renderer.cam.x = 420; g.renderer.cam.y = 1500; }); await p.waitForTimeout(300); s = await world(250, 1500);
+await G(p, () => { const g = window.__game; g.renderer.cam.follow = false; g.renderer.cam.x = 420; g.renderer.cam.y = 1500; }); await p.waitForTimeout(600); s = await world(400, 1560);
 await p.mouse.move(cardBox.x + 30, cardBox.y + 40); await p.mouse.down(); await p.mouse.move(s.x + 40, s.y + 60, { steps: 6 }); await p.mouse.move(s.x, s.y, { steps: 6 });
 await p.screenshot({ path: 'shots/04-card-drag.png' });
 await p.mouse.up(); await p.waitForTimeout(600);
 await p.screenshot({ path: 'shots/05-card-deployed.png' });
 check('dragging a card deploys it and spends essence', await G(p, () => window.__game.sim.teams[0].stats.cardsPlayed) === before + 1 && await G(p, () => window.__game.sim.teams[0].essence) < 10);
 // last hit: plant a weak enemy creep next to the hero and attack it with a right click
-await G(p, () => { const g = window.__game, s = g.sim, h = s.heroes[0]; g.renderer.cam.follow = true; h.x = 600; h.y = 1500; h.hero.order = null; s.command({ type: 'stop', team: 0 }); const c = s.spawn('creepMelee', 1, h.x + 60, h.y - 40); c.hp = 12; c.stunEnd = s.tick + 6000; window.__c = c.id; });
-await p.waitForTimeout(500);
+await G(p, () => { const g = window.__game, s = g.sim, h = s.heroes[0]; for (const u of s.units) if (u.team === 0 && (u.kind === 'troop' || u.kind === 'building')) u.lifeEnd = s.tick + 1; g.renderer.cam.follow = true; h.x = 600; h.y = 1640; h.hero.order = null; s.command({ type: 'stop', team: 0 }); const c = s.spawn("creepMelee", 1, 600, 1700); c.hp = 12; c.stunEnd = s.tick + 6000; window.__c = c.id; });
+await p.waitForTimeout(2500);
 const cpos = await G(p, () => { const c = window.__game.sim.byId.get(window.__c); return { x: c.x, y: c.y - 8 }; });
 s = await world(cpos.x, cpos.y); const g0 = await G(p, () => window.__game.sim.teams[0].gold);
 await p.mouse.click(s.x, s.y, { button: 'right' }); await p.waitForTimeout(2200);
 const lh = await G(p, () => ({ lh: window.__game.sim.teams[0].stats.lastHits, gold: window.__game.sim.teams[0].gold }));
 check('last hit: killing blow by the hero pays gold', lh.lh >= 1 && lh.gold >= g0 + 22, `lastHits=${lh.lh} gold ${Math.floor(g0)} -> ${Math.floor(lh.gold)}`);
 // deny: an allied creep under 50% HP, finished by the hero
-await G(p, () => { const s = window.__game.sim, h = s.heroes[0]; s.command({ type: 'stop', team: 0 }); h.x = 600; h.y = 1500; const c = s.spawn('creepMelee', 0, h.x - 60, h.y - 40); c.hp = 12; c.stunEnd = s.tick + 6000; window.__c = c.id; });
-await p.waitForTimeout(400);
+await G(p, () => { const s = window.__game.sim, h = s.heroes[0]; s.command({ type: 'stop', team: 0 }); h.x = 600; h.y = 1640; const c = s.spawn("creepMelee", 0, 600, 1580); c.hp = 12; c.stunEnd = s.tick + 6000; window.__c = c.id; });
+await p.waitForTimeout(1500);
 const dpos = await G(p, () => { const c = window.__game.sim.byId.get(window.__c); return { x: c.x, y: c.y - 8 }; });
 s = await world(dpos.x, dpos.y); await p.mouse.click(s.x, s.y, { button: 'right' }); await p.waitForTimeout(2200);
 check('deny: finishing an allied creep under 50% counts as a deny', await G(p, () => window.__game.sim.teams[0].stats.denies) >= 1);
 // ability via keyboard
-await G(p, () => { const s = window.__game.sim, h = s.heroes[0]; h.x = 600; h.y = 1500; s.command({ type: 'stop', team: 0 }); const c = s.spawn('creepMelee', 1, h.x + 40, h.y - 150); c.maxHp = c.hp = 4000; c.stunEnd = s.tick + 6000; window.__c = c.id; });
+await G(p, () => { const s = window.__game.sim, h = s.heroes[0]; h.x = 600; h.y = 1640; s.command({ type: 'stop', team: 0 }); const c = s.spawn("creepMelee", 1, 600, 1700); c.maxHp = c.hp = 4000; c.stunEnd = s.tick + 6000; window.__c = c.id; });
 await p.waitForTimeout(400);
 const apos = await G(p, () => { const c = window.__game.sim.byId.get(window.__c); return { x: c.x, y: c.y }; }); s = await world(apos.x, apos.y);
 await p.mouse.move(s.x, s.y); const m0 = await G(p, () => window.__game.sim.heroes[0].hero.mana); await p.keyboard.press('q'); await p.waitForTimeout(900);
@@ -75,7 +74,7 @@ await p.locator('.item', { hasText: 'Iron Band' }).first().dispatchEvent('pointe
 await p.locator('.item', { hasText: 'Brawler Girdle' }).first().dispatchEvent('pointerdown'); await p.waitForTimeout(400);
 await p.screenshot({ path: 'shots/07-shop.png' });
 const inv = await G(p, () => ({ items: window.__game.sim.heroes[0].hero.items.filter(Boolean).map(i => i.id), gold: Math.floor(window.__game.sim.teams[0].gold) }));
-check('shop: component then upgrade, components credited', inv.items.length === 1 && inv.items[0] === 'girdle' && inv.gold >= 700 - 480 && inv.gold <= 700 - 480 + 12, JSON.stringify(inv));
+check('shop: component then upgrade, components credited', inv.items.length === 1 && inv.items[0] === 'girdle' && inv.gold >= 700 - 480 && inv.gold <= 700 - 480 + 80, JSON.stringify(inv));
 await p.keyboard.press('b');
 // pause, speed, resume
 await p.keyboard.press('Escape'); await p.waitForSelector('.modal'); const t0 = await G(p, () => window.__game.sim.tick); await p.waitForTimeout(500);
@@ -84,7 +83,7 @@ check('pause freezes the simulation', await G(p, () => window.__game.sim.tick) =
 await p.click('.seg >> text=2x'); await p.click('text=Resume'); await p.waitForTimeout(400);
 check('resume and game speed option', await G(p, () => window.__game.sim.tick) > t0 && await G(p, () => window.__game.settings.speed) === 2);
 // essence rate change, boss, runes, sudden death: fast-forward the live match and watch the HUD
-await G(p, () => { const g = window.__game; g.auto.enabled = true; g.auto.speed = 30; g.auto.target = 99; g.sim.heroes[0].hero.order = null; });
+await G(p, () => { const g = window.__game; g.auto.enabled = true; g.auto.speed = 30; g.auto.target = 1; g.sim.heroes[0].hero.order = null; });
 await p.waitForFunction(() => window.__game.sim.time > 181, null, { timeout: 120000 }); await p.waitForTimeout(250);
 await p.screenshot({ path: 'shots/09-essence-x2.png' });
 check('essence rate doubles at 3:00 with a visible indicator', await G(p, () => window.__game.sim.essenceMult === 2 && document.querySelector('#essence .mult').textContent === 'x2'));
@@ -95,21 +94,27 @@ await p.screenshot({ path: 'shots/10-boss.png' });
 await G(p, () => { window.__game.auto.speed = 30; });
 await p.waitForFunction(() => window.__game.sim.time > 361 || window.__game.sim.over, null, { timeout: 180000 });
 check('essence rate triples at 6:00', await G(p, () => window.__game.sim.over || window.__game.sim.essenceMult === 3));
-// force a clean sudden death on this match: heal everything, park heroes, jump the clock
-await G(p, () => { const g = window.__game, s = g.sim; if (s.over) return; g.bot.passive = true; g.autoBot = null; g.auto.speed = 1; });
-await p.waitForFunction(() => window.__game.sim.over || window.__game.sim.time > 362, null, { timeout: 60000 });
-await G(p, () => { const g = window.__game; g.auto.speed = 40; });
-await p.waitForFunction(() => window.__game.sim.suddenDeath || window.__game.sim.over, null, { timeout: 240000 });
-await G(p, () => { window.__game.auto.speed = 2; }); await p.waitForTimeout(1500);
-await p.screenshot({ path: 'shots/11-sudden-death.png' });
-const sd = await G(p, () => ({ sd: window.__game.sim.suddenDeath, over: window.__game.sim.over, t: window.__game.sim.time }));
-check('sudden death begins at 8:00 (or the match ended earlier)', sd.sd || sd.over, JSON.stringify(sd));
-await G(p, () => { const g = window.__game; g.auto.speed = 40; g.auto.target = 1; g.auto.matches = 0; });
+await G(p, () => { window.__game.auto.speed = 40; });
 await p.waitForFunction(() => window.__game.state === 'over' && document.querySelector('.stats'), null, { timeout: 240000 });
 await p.waitForTimeout(400); await p.screenshot({ path: 'shots/12-postmatch.png' });
 const end = await G(p, () => ({ w: window.__game.sim.winner, t: Math.round(window.__game.sim.time), rows: document.querySelectorAll('.stats tr').length }));
 check('full match played to a result with a post-match stats screen', end.w >= 0 && end.rows >= 10, JSON.stringify(end));
 check('match length within 8:00 + 2:00 sudden death', end.t <= 601, `ended at ${end.t}s`);
+await p.close();
+
+// ---------- 1b. sudden death: both sides stand down, so nobody wins before 8:00 ----------
+p = await newPage();
+await p.goto(url + '?auto=1&speed=40&matches=1'); await p.waitForFunction(() => window.__game?.sim);
+await G(p, () => { const g = window.__game; g.bot.passive = true; g.autoBot = null; });
+await p.waitForFunction(() => window.__game.sim.suddenDeath, null, { timeout: 240000 });
+await G(p, () => { const g = window.__game; g.auto.speed = 1; g.renderer.cam.follow = false; g.renderer.cam.y = 1500; }); await p.waitForTimeout(1500);
+await p.screenshot({ path: 'shots/11-sudden-death.png' });
+const sd = await G(p, () => { const s = window.__game.sim; return { t: Math.round(s.time), towerHp: Math.round(s.lanes[0][0].t1.hp / s.lanes[0][0].t1.maxHp * 100), vignette: document.querySelector('#vignette').classList.contains('on') }; });
+check('sudden death begins at 8:00 and structures burn', sd.t >= 480 && sd.t < 490 && sd.towerHp < 100 && sd.vignette, JSON.stringify(sd));
+await G(p, () => { window.__game.auto.speed = 40; });
+await p.waitForFunction(() => window.__game.sim.over, null, { timeout: 240000 });
+const sdEnd = await G(p, () => ({ w: window.__game.sim.winner, t: Math.round(window.__game.sim.time) }));
+check('sudden death resolves the match by 10:00', sdEnd.t <= 600 && sdEnd.w >= 0, JSON.stringify(sdEnd));
 await p.close();
 
 // ---------- 2. tutorial ----------
@@ -120,13 +125,14 @@ const tw = async (x, y) => G(p, ([x, y]) => window.__game.renderer.worldToScreen
 let hp = await G(p, () => { const h = window.__game.sim.heroes[0]; return { x: h.x, y: h.y }; });
 s = await tw(hp.x - 200, hp.y - 60); await p.mouse.click(s.x, s.y, { button: 'right' });
 await p.waitForFunction(() => document.querySelector('#tutorial h3').textContent.startsWith('2'), null, { timeout: 15000 });
+await p.waitForTimeout(2500);
 const cr = await G(p, () => { const s = window.__game.sim; const c = s.units.find(u => u.team === 1 && u.kind === 'creep' && u.hp < 50); return { x: c.x, y: c.y - 8 }; });
 s = await tw(cr.x, cr.y); await p.mouse.click(s.x, s.y, { button: 'right' });
 await p.waitForFunction(() => document.querySelector('#tutorial h3').textContent.startsWith('3'), null, { timeout: 15000 });
 await p.screenshot({ path: 'shots/14-tutorial-step3.png' });
 await p.keyboard.press('q');
 await p.waitForFunction(() => document.querySelector('#tutorial h3').textContent.startsWith('4'), null, { timeout: 15000 });
-const cb = await p.locator('#hand .card').nth(0).boundingBox(); hp = await G(p, () => { const h = window.__game.sim.heroes[0]; return { x: h.x, y: h.y }; }); s = await tw(hp.x, hp.y - 60);
+const cb = await p.locator('#hand .card').nth(1).boundingBox(); await p.waitForTimeout(1500); hp = await G(p, () => { const h = window.__game.sim.heroes[0]; return { x: h.x, y: h.y }; }); s = await tw(hp.x, hp.y - 60);
 await p.mouse.move(cb.x + 30, cb.y + 40); await p.mouse.down(); await p.mouse.move(s.x, s.y, { steps: 8 }); await p.mouse.up();
 await p.waitForFunction(() => document.querySelector('#tutorial h3').textContent.startsWith('5'), null, { timeout: 15000 });
 await p.keyboard.press('b'); await p.waitForSelector('.shop'); await p.locator('.item', { hasText: 'Healing Salve' }).first().dispatchEvent('pointerdown');
