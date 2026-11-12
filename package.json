@@ -1,0 +1,66 @@
+{
+  "name": "frostember-duel",
+  "productName": "Frostember Duel",
+  "version": "1.0.0",
+  "description": "A 1v1 card-commander plus hero-champion arena game. Cards deploy, a hero fights.",
+  "author": "Frostember Duel team",
+  "license": "MIT",
+  "private": true,
+  "type": "module",
+  "main": "electron/main.cjs",
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc --noEmit && vite build",
+    "preview": "vite preview --port 4173",
+    "test": "vitest run",
+    "balance": "tsx tools/balance.ts",
+    "verify": "node scripts/verify-web.mjs",
+    "electron": "electron .",
+    "start": "npm run build && electron .",
+    "package:win": "npm run build && node scripts/package-win.mjs",
+    "dist": "npm run build && electron-builder --win portable --x64"
+  },
+  "build": {
+    "appId": "com.frostember.duel",
+    "productName": "Frostember Duel",
+    "files": [
+      "dist/**/*",
+      "electron/**/*",
+      "package.json"
+    ],
+    "directories": {
+      "output": "release/builder"
+    },
+    "win": {
+      "target": [
+        {
+          "target": "portable",
+          "arch": [
+            "x64"
+          ]
+        }
+      ]
+    },
+    "portable": {
+      "artifactName": "FrostemberDuel-portable.exe"
+    }
+  },
+  "dependencies": {
+    "@fontsource/fredoka": "^5.3.0",
+    "@fontsource/lilita-one": "^5.3.0",
+    "howler": "^2.2.4",
+    "pixi.js": "^8.23.0"
+  },
+  "devDependencies": {
+    "@electron/packager": "^20.3.0",
+    "@types/howler": "^2.2.13",
+    "@types/node": "^26.6.6",
+    "archiver": "^8.0.0",
+    "electron": "^45.3.1",
+    "electron-builder": "^26.18.0",
+    "tsx": "^4.23.15",
+    "typescript": "^7.0.2",
+    "vite": "^8.3.8",
+    "vitest": "^5.1.0"
+  }
+}

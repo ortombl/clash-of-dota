@@ -1,0 +1,96 @@
+import type { HeroDef } from '../sim/types';
+
+/** Six heroes. Ability numbers: amt + per * (heroLevel - 1), scaled by spell power. Q/W/E unlock at levels 1/2/3, R at 6. */
+export const HERO_LIST: HeroDef[] = [
+  {
+    id: 'brakka', name: 'Brakka', title: 'the Anvil', primary: 'str', blurb: 'Melee bruiser. Stuns everything around him and refuses to die.',
+    str: 24, agi: 12, int: 12, strG: 3.0, agiG: 1.4, intG: 1.3, baseDmg: 30, atkInt: 1.45, range: 30, speed: 152, art: 'brakka',
+    build: ['ironband', 'boots', 'girdle', 'hidevest', 'titanheart', 'bastion', 'greaves'],
+    abilities: [
+      { id: 'slam', name: 'Hammer Slam', icon: 'hammer', color: '#ffb347', cast: 'self', range: 0, radius: 175, cd: 9, mana: 55, delay: 0.35, ai: 'aoe', desc: 'Smash the ground: damage and a 0.9s stun around Brakka.',
+        effects: [{ t: 'damage', amt: 70, per: 16, radius: 175 }, { t: 'stun', dur: 0.9, radius: 175 }] },
+      { id: 'ironhide', name: 'Iron Hide', icon: 'shield', color: '#c9ccd6', cast: 'self', range: 0, cd: 14, mana: 45, ai: 'shield', desc: 'Gain a damage barrier and +6 armor for 5s.',
+        effects: [{ t: 'shield', amt: 150, per: 35, dur: 5, self: true }, { t: 'buff', dur: 5, self: true, buff: { armor: 6, tag: 'ironhide' } }] },
+      { id: 'warcry', name: 'War Cry', icon: 'horn', color: '#ff7a5a', cast: 'self', range: 0, radius: 320, cd: 18, mana: 50, ai: 'buff', desc: 'Nearby allies gain +30% attack speed and +20% damage for 6s.',
+        effects: [{ t: 'buff', radius: 320, dur: 6, buff: { as: 0.3, dmg: 0.2, tag: 'warcry' } }] },
+      { id: 'quake', name: 'Quake', icon: 'star', color: '#ff5a3a', cast: 'self', range: 0, radius: 300, cd: 60, mana: 120, delay: 0.9, ai: 'aoe', desc: 'After a wind-up, a huge shockwave damages and stuns for 1.6s.',
+        effects: [{ t: 'damage', amt: 220, per: 45, radius: 300 }, { t: 'stun', dur: 1.6, radius: 300 }] },
+    ],
+  },
+  {
+    id: 'sylphine', name: 'Sylphine', title: 'Gale Archer', primary: 'agi', blurb: 'Long-range carry. Kites with Tumble, punishes clumps with Arrowstorm.',
+    str: 16, agi: 22, int: 15, strG: 1.8, agiG: 2.8, intG: 1.6, baseDmg: 24, atkInt: 1.35, range: 330, speed: 150, projSpeed: 780, art: 'sylphine',
+    build: ['fleetwraps', 'whetstone', 'fang', 'boots', 'stormpiercer', 'leech', 'bloodreaver'],
+    abilities: [
+      { id: 'pierce', name: 'Piercing Shot', icon: 'arrow', color: '#9af0a8', cast: 'point', range: 520, cd: 7, mana: 50, delay: 0.25, ai: 'nuke', desc: 'Fire a bolt that damages every enemy in a line.',
+        effects: [{ t: 'line', amt: 80, per: 18, length: 540, width: 46 }] },
+      { id: 'tumble', name: 'Tumble', icon: 'boot', color: '#7be08c', cast: 'point', range: 260, cd: 10, mana: 40, ai: 'escape', desc: 'Dash a short distance and gain +50% attack speed for 3s.',
+        effects: [{ t: 'blink' }, { t: 'buff', dur: 3, self: true, buff: { as: 0.5, tag: 'tumble' } }] },
+      { id: 'hobble', name: 'Hobble Arrow', icon: 'snow', color: '#8fd4ff', cast: 'unit', range: 420, cd: 9, mana: 45, ai: 'nuke', desc: 'Damage one enemy and slow it by 45% for 2.5s.',
+        effects: [{ t: 'damage', amt: 50, per: 12 }, { t: 'slow', pct: 0.45, dur: 2.5 }] },
+      { id: 'arrowstorm', name: 'Arrowstorm', icon: 'rain', color: '#c6ff8a', cast: 'point', range: 520, radius: 210, cd: 55, mana: 110, delay: 0.5, ai: 'aoe', desc: 'Rain arrows on an area for 4s.',
+        effects: [{ t: 'zone', dur: 4, radius: 210, dps: 70, per: 14 }] },
+    ],
+  },
+  {
+    id: 'morvane', name: 'Morvane', title: 'Ash Magus', primary: 'int', blurb: 'Burst caster. Fragile, but his combo deletes whatever it lands on.',
+    str: 14, agi: 13, int: 24, strG: 1.6, agiG: 1.3, intG: 3.0, baseDmg: 22, atkInt: 1.5, range: 300, speed: 146, projSpeed: 600, art: 'morvane',
+    build: ['sagebead', 'boots', 'orb', 'ironband', 'archonstaff', 'girdle', 'titanheart'],
+    abilities: [
+      { id: 'cinder', name: 'Cinder Bolt', icon: 'flame', color: '#ff8a3a', cast: 'unit', range: 430, cd: 6, mana: 55, ai: 'nuke', desc: 'Scorch one enemy.',
+        effects: [{ t: 'damage', amt: 95, per: 22 }] },
+      { id: 'scorch', name: 'Scorch Ring', icon: 'ringfire', color: '#ffb03a', cast: 'point', range: 450, radius: 140, cd: 9, mana: 70, delay: 0.6, ai: 'aoe', desc: 'A ring of fire erupts after a short delay.',
+        effects: [{ t: 'damage', amt: 85, per: 19, radius: 140 }] },
+      { id: 'stasis', name: 'Stasis Glyph', icon: 'eye', color: '#c59aff', cast: 'unit', range: 380, cd: 13, mana: 60, ai: 'stun', desc: 'Lock one enemy in place for 1.4s.',
+        effects: [{ t: 'stun', dur: 1.4 }, { t: 'damage', amt: 20, per: 6 }] },
+      { id: 'starfall', name: 'Starfall', icon: 'star', color: '#ffd24a', cast: 'point', range: 560, radius: 220, cd: 60, mana: 140, delay: 1.1, ai: 'aoe', desc: 'Call down a burning star on a large area.',
+        effects: [{ t: 'damage', amt: 300, per: 55, radius: 220 }] },
+    ],
+  },
+  {
+    id: 'thessa', name: 'Thessa', title: 'Tide Mender', primary: 'int', blurb: 'Support. Keeps a card push alive far longer than it deserves.',
+    str: 16, agi: 14, int: 22, strG: 1.9, agiG: 1.4, intG: 2.7, baseDmg: 24, atkInt: 1.45, range: 290, speed: 148, projSpeed: 600, art: 'thessa',
+    build: ['sagebead', 'boots', 'orb', 'hidevest', 'archonstaff', 'greaves', 'bastion'],
+    abilities: [
+      { id: 'mendwave', name: 'Mending Wave', icon: 'heart', color: '#6fe0b0', cast: 'point', range: 420, radius: 170, cd: 8, mana: 60, ai: 'heal', desc: 'Heal all allies in an area.',
+        effects: [{ t: 'heal', amt: 80, per: 18, radius: 170 }] },
+      { id: 'bubble', name: 'Tide Bubble', icon: 'shield', color: '#7cc0ff', cast: 'point', range: 420, radius: 150, cd: 12, mana: 55, ai: 'shield', desc: 'Allies in an area gain a barrier for 5s.',
+        effects: [{ t: 'shield', amt: 120, per: 28, dur: 5, radius: 150 }] },
+      { id: 'undertow', name: 'Undertow', icon: 'wave', color: '#4aa0e0', cast: 'point', range: 420, radius: 160, cd: 10, mana: 60, delay: 0.4, ai: 'aoe', desc: 'Damage enemies in an area and slow them by 45% for 3s.',
+        effects: [{ t: 'damage', amt: 60, per: 14, radius: 160 }, { t: 'slow', pct: 0.45, dur: 3, radius: 160 }] },
+      { id: 'hightide', name: 'High Tide', icon: 'rain', color: '#8ae8ff', cast: 'self', range: 0, radius: 420, cd: 60, mana: 130, ai: 'heal', desc: 'Massive heal and +30% speed to all allies around Thessa.',
+        effects: [{ t: 'heal', amt: 220, per: 40, radius: 420 }, { t: 'buff', radius: 420, dur: 6, buff: { as: 0.3, ms: 0.3, tag: 'hightide' } }] },
+    ],
+  },
+  {
+    id: 'kael', name: 'Kael', title: 'Nightstep', primary: 'agi', blurb: 'Melee assassin. Jumps the enemy hero and vanishes before the tower turns.',
+    str: 18, agi: 23, int: 13, strG: 2.0, agiG: 2.9, intG: 1.3, baseDmg: 27, atkInt: 1.3, range: 28, speed: 158, art: 'kael',
+    build: ['fleetwraps', 'whetstone', 'leech', 'boots', 'fang', 'bloodreaver', 'stormpiercer'],
+    abilities: [
+      { id: 'lunge', name: 'Shadow Lunge', icon: 'dagger', color: '#b08aff', cast: 'unit', range: 380, cd: 8, mana: 50, ai: 'nuke', desc: 'Leap to an enemy and strike it.',
+        effects: [{ t: 'blink', toTarget: true }, { t: 'damage', amt: 70, per: 17 }] },
+      { id: 'veil', name: 'Smoke Veil', icon: 'eye', color: '#8a8aa8', cast: 'self', range: 0, cd: 15, mana: 40, ai: 'escape', desc: 'Turn invisible and move 35% faster for 4s.',
+        effects: [{ t: 'invis', dur: 4 }, { t: 'buff', dur: 4, self: true, buff: { ms: 0.35, tag: 'veil' } }] },
+      { id: 'fangs', name: 'Twin Fangs', icon: 'sword', color: '#ff5a7a', cast: 'self', range: 0, cd: 14, mana: 45, ai: 'buff', desc: '+35% damage and 30% lifesteal for 5s.',
+        effects: [{ t: 'buff', dur: 5, self: true, buff: { dmg: 0.35, lifesteal: 0.3, tag: 'fangs' } }] },
+      { id: 'deathmark', name: 'Deathmark', icon: 'skull', color: '#e04a8a', cast: 'unit', range: 320, cd: 50, mana: 110, ai: 'nuke', desc: 'A killing blow: heavy damage and a 50% slow.',
+        effects: [{ t: 'blink', toTarget: true }, { t: 'damage', amt: 260, per: 50 }, { t: 'slow', pct: 0.5, dur: 2 }] },
+    ],
+  },
+  {
+    id: 'grum', name: 'Grum', title: 'Rootfather', primary: 'str', blurb: 'Summoner. Grows his own army and roots anything that walks into it.',
+    str: 22, agi: 12, int: 17, strG: 2.7, agiG: 1.3, intG: 2.0, baseDmg: 28, atkInt: 1.5, range: 30, speed: 146, art: 'grum',
+    build: ['ironband', 'sagebead', 'girdle', 'boots', 'orb', 'titanheart', 'archonstaff'],
+    abilities: [
+      { id: 'entangle', name: 'Entangle', icon: 'leaf', color: '#7bd05a', cast: 'point', range: 380, radius: 130, cd: 11, mana: 60, delay: 0.5, ai: 'stun', desc: 'Roots burst from the ground: damage and a 1.1s stun.',
+        effects: [{ t: 'damage', amt: 40, per: 10, radius: 130 }, { t: 'stun', dur: 1.1, radius: 130 }] },
+      { id: 'saplings', name: 'Saplings', icon: 'tree', color: '#a8d86a', cast: 'self', range: 0, cd: 16, mana: 65, ai: 'summon', desc: 'Summon two Saplings that fight for 20s.',
+        effects: [{ t: 'summon', unit: 'sapling', count: 2, life: 20 }] },
+      { id: 'barkaura', name: 'Bark Aura', icon: 'heart', color: '#5fd068', cast: 'self', range: 0, radius: 220, cd: 16, mana: 55, ai: 'heal', desc: 'A healing grove follows Grum for 5s.',
+        effects: [{ t: 'zone', dur: 5, radius: 220, hps: 28, per: 5, follow: true }] },
+      { id: 'eldergrove', name: 'Elder Grove', icon: 'star', color: '#d0f06a', cast: 'self', range: 0, radius: 200, cd: 65, mana: 130, ai: 'summon', desc: 'Summon a Grove Elder for 30s and damage nearby enemies.',
+        effects: [{ t: 'summon', unit: 'elder', count: 1, life: 30 }, { t: 'damage', amt: 150, per: 30, radius: 200 }] },
+    ],
+  },
+];
+export const HEROES: Record<string, HeroDef> = Object.fromEntries(HERO_LIST.map(h => [h.id, h]));
