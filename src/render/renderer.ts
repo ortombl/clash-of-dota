@@ -31,7 +31,7 @@ export interface UiOverlay {
 export class Renderer {
   app = new Application();
   world = new Container();
-  private decal = new Graphics(); private rubble = new Graphics(); private unitLayer = new Container(); private over = new Graphics();
+  private glow = new Graphics(); private vig!: Sprite; private decal = new Graphics(); private rubble = new Graphics(); private unitLayer = new Container(); private over = new Graphics();
   private texts = new Container(); private fogSprite!: Sprite; private fogCv = makeCanvas(150, 250); private fogTex!: Texture;
   private views = new Map<number, View>(); private dying: Dying[] = [];
   private parts: Particle[] = []; private rings: Ring[] = []; private floats: Float[] = []; private bolts: Bolt[] = [];
@@ -44,12 +44,16 @@ export class Renderer {
   W = 1280; H = 720;
 
   async init(canvas: HTMLCanvasElement) {
-    await this.app.init({ canvas, background: 0x241a1c, antialias: true, autoDensity: true, resolution: Math.min(2, window.devicePixelRatio || 1), autoStart: false, width: window.innerWidth, height: window.innerHeight, preference: 'webgl' });
+    await this.app.init({ canvas, background: 0x06070b, antialias: true, autoDensity: true, resolution: Math.min(2, window.devicePixelRatio || 1), autoStart: false, width: window.innerWidth, height: window.innerHeight, preference: 'webgl' });
     const g = new Sprite(Texture.from(paintGround())); g.scale.set(1 / GROUND_SCALE); g.position.set(-GROUND_PAD, -GROUND_PAD);
     this.unitLayer.sortableChildren = true;
     this.fogTex = Texture.from(this.fogCv); this.fogSprite = new Sprite(this.fogTex); this.fogSprite.scale.set(M.w / 150, M.h / 250);
-    this.world.addChild(g, this.rubble, this.decal, this.unitLayer, this.fogSprite, this.over, this.texts);
-    this.app.stage.addChild(this.world);
+    this.glow.blendMode = 'add';
+    this.world.addChild(g, this.rubble, this.decal, this.unitLayer, this.glow, this.fogSprite, this.over, this.texts);
+    // screen-space vignette for depth
+    const vc = makeCanvas(256, 256), vx = vc.getContext('2d')!; const vg = vx.createRadialGradient(128, 128, 70, 128, 128, 182); vg.addColorStop(0, 'rgba(0,0,0,0)'); vg.addColorStop(1, 'rgba(2,3,10,0.78)'); vx.fillStyle = vg; vx.fillRect(0, 0, 256, 256);
+    this.vig = new Sprite(Texture.from(vc));
+    this.app.stage.addChild(this.world, this.vig);
     for (let i = 0; i < 2; i++) { const t = this.mkText(13); this.runeText.push(t); this.texts.addChild(t); t.visible = false; }
     this.resize();
   }
@@ -65,7 +69,7 @@ export class Renderer {
 
   resize() {
     this.W = window.innerWidth; this.H = window.innerHeight;
-    this.app.renderer.resize(this.W, this.H);
+    this.app.renderer.resize(this.W, this.H); if (this.vig) { this.vig.width = this.W; this.vig.height = this.H; }
     this.cam.scale = this.defaultScale();
   }
   defaultScale() { return Math.max(0.38, Math.min(this.W / (M.w + 40), this.H / 1000)); }
@@ -195,7 +199,9 @@ export class Renderer {
     this.world.scale.set(cam.scale);
     this.world.position.set(Math.round(this.W / 2 - cam.x * cam.scale + sx), Math.round((this.H - this.hudBottom) / 2 - cam.y * cam.scale + sy));
 
-    const d = this.decal, o = this.over; d.clear(); o.clear();
+    const d = this.decal, o = this.over, gl = this.glow; d.clear(); o.clear(); gl.clear();
+    // moving glints on the river
+    for (let i = 0; i < 46; i++) { const ph = this.clock * 0.35 + i * 1.7, gx = ((i * 197.3 + this.clock * (14 + (i % 5) * 5)) % (M.w + 80)) - 40, gy = M.riverY + Math.sin(i * 12.9) * (M.riverHalf - 14) + Math.sin(ph) * 4; gl.ellipse(gx, gy, 14 + (i % 4) * 6, 1.6).fill({ color: 0x9fe8ff, alpha: 0.10 + 0.08 * Math.sin(ph * 2 + i) }); }
     this.sources.length = 0;
     const myHit = me.dmg * me.dmgMul;
     const seen = new Set<number>();
@@ -214,7 +220,7 @@ export class Renderer {
     for (const z of sim.zones) {
       if (z.team !== pt && !this.zoneVisible(z.x, z.y)) continue;
       const col = z.hps ? 0x5fd068 : z.team === pt ? 0x6ab8ff : 0xff6a3a; const pulse = 0.12 + Math.sin(this.clock * 8) * 0.04;
-      d.circle(z.x, z.y, z.radius).fill({ color: col, alpha: pulse }).stroke({ width: 3, color: col, alpha: 0.6 });
+      d.circle(z.x, z.y, z.radius).fill({ color: col, alpha: pulse }).stroke({ width: 3, color: col, alpha: 0.6 }); gl.circle(z.x, z.y, z.radius * 0.8).fill({ color: col, alpha: 0.10 });
       if (this.frame % 3 === 0 && this.parts.length < 700) { const a = Math.random() * 6.283, r = Math.sqrt(Math.random()) * z.radius; this.parts.push({ x: z.x + Math.cos(a) * r, y: z.y + Math.sin(a) * r, vx: 0, vy: 0, z: z.hps ? 0 : 70, vz: z.hps ? 50 : -160, life: 0.45, max: 0.45, size: 3.5, color: col, sq: !z.hps }); }
     }
     // telegraphs
@@ -266,7 +272,9 @@ export class Renderer {
       v.spr.tint = u.stunEnd > T && T >= u.activeAt ? 0xb8b8d8 : u.slowEnd > T ? 0x9cc8ff : 0xffffff;
       v.flash.alpha = Math.max(0, 1 - (T - u.flash) / 7) * 0.85;
       // ground shadow + rings
-      d.ellipse(x + 3, y + 4, u.r * 1.05, u.r * 0.55).fill({ color: 0x000000, alpha: 0.22 });
+      { const sk = u.structure ? 1.9 : 1.25; d.ellipse(x + u.r * 0.7 * sk, y + u.r * 0.32 * sk, u.r * 1.25 * sk, u.r * 0.5 * sk).fill({ color: 0x000000, alpha: 0.26 }); d.ellipse(x + 2, y + 3, u.r * 1.05, u.r * 0.55).fill({ color: 0x000000, alpha: 0.34 }); }
+      if (u.hero || u.kind === 'tower' || u.kind === 'ancient' || u.kind === 'boss') { const lc = u.team === 2 ? 0xff3a8a : TEAM_HEX[u.team], fl = 1 + Math.sin(this.clock * 5 + u.id) * 0.08, R0 = (u.kind === 'ancient' ? 150 : u.hero ? 70 : 100) * fl; gl.ellipse(x, y, R0, R0 * 0.62).fill({ color: lc, alpha: 0.05 }); gl.ellipse(x, y, R0 * 0.6, R0 * 0.37).fill({ color: lc, alpha: 0.06 }); if (!u.hero) { gl.circle(x, y - v.h * 0.86, 22 * fl).fill({ color: lc, alpha: 0.16 }); gl.circle(x, y - v.h * 0.86, 9).fill({ color: 0xffffff, alpha: 0.35 }); } }
+      if (ak > 0.3 && !u.def.projSpeed && !u.structure) gl.circle(x + Math.cos(u.facing) * (u.r + 8), y - v.h * 0.35 + Math.sin(u.facing) * (u.r + 8), 9 * ak).fill({ color: 0xfff0c0, alpha: 0.5 * ak });
       if (u === me) d.ellipse(x, y, u.r + 9, (u.r + 9) * 0.62).stroke({ width: 3, color: 0xffffff, alpha: 0.85 });
       if (u.id === ui.hoverId && u !== me) d.ellipse(x, y, u.r + 7, (u.r + 7) * 0.62).stroke({ width: 3, color: u.team === pt ? 0x7dff9a : 0xff5a4a, alpha: 0.9 });
       if (u.dmgMul > 1.05) d.ellipse(x, y, u.r + 5, (u.r + 5) * 0.62).stroke({ width: 3, color: 0xff9a3a, alpha: 0.5 + Math.sin(this.clock * 10) * 0.25 });
@@ -301,7 +309,7 @@ export class Renderer {
       const dy = this.dying[i]; dy.t += dt; const k = dy.t / dy.dur;
       if (k >= 1) {
         dy.c.destroy({ children: true }); this.dying.splice(i, 1);
-        if (dy.struct) { const g = this.rubble; for (let j = 0; j < 7; j++) { const a = j * 0.9 + dy.x, rr = dy.r * (0.3 + ((j * 37) % 10) / 14); g.circle(dy.x + Math.cos(a) * rr, dy.y + Math.sin(a) * rr * 0.6, 5 + (j * 13) % 7).fill({ color: j % 2 ? 0x8d8799 : 0xb5b0c0 }).stroke({ width: 2, color: INKH }); } g.ellipse(dy.x, dy.y, dy.r * 0.5, dy.r * 0.25).fill({ color: TEAM_DARK[dy.team], alpha: 0.8 }); this.ring(dy.x, dy.y, dy.r * 0.5, dy.r * 3, 0xd8d0c0, 0.6, 10, true); }
+        if (dy.struct) { const g = this.rubble; for (let j = 0; j < 7; j++) { const a = j * 0.9 + dy.x, rr = dy.r * (0.3 + ((j * 37) % 10) / 14); g.circle(dy.x + Math.cos(a) * rr, dy.y + Math.sin(a) * rr * 0.6, 5 + (j * 13) % 7).fill({ color: j % 2 ? 0x4d4852 : 0x6f6a72 }).stroke({ width: 2, color: INKH }); } g.ellipse(dy.x, dy.y, dy.r * 0.5, dy.r * 0.25).fill({ color: TEAM_DARK[dy.team], alpha: 0.8 }); this.ring(dy.x, dy.y, dy.r * 0.5, dy.r * 3, 0xd8d0c0, 0.6, 10, true); }
         continue;
       }
       if (dy.struct) { dy.c.scale.set(1 + k * 0.08, 1 - k * 0.85); dy.c.x = dy.x + Math.sin(dy.t * 70) * 3 * (1 - k); dy.c.rotation = Math.sin(dy.t * 9) * 0.05 * k; if (this.frame % 2 === 0) this.burst(dy.x + (Math.random() - 0.5) * dy.r * 2, dy.y, 2, 0xcfc9bd, 110, 6, 0.7, true); }
@@ -312,7 +320,7 @@ export class Renderer {
     for (const p of sim.projectiles) {
       if (p.team !== pt && !this.visibleAt(p.x, p.y)) continue;
       const col = p.team === 2 ? 0xd8e08a : TEAM_LIGHT[p.team]; const r = p.big ? 6.5 : 4;
-      o.circle(p.x, p.y - 16, r + 2).fill({ color: INKH }); o.circle(p.x, p.y - 16, r).fill({ color: col });
+      gl.circle(p.x, p.y - 16, r * 3.4).fill({ color: TEAM_HEX[p.team], alpha: 0.22 }); gl.circle(p.x, p.y - 16, r * 1.8).fill({ color: col, alpha: 0.5 }); o.circle(p.x, p.y - 16, r * 0.7).fill({ color: 0xffffff });
       d.ellipse(p.x, p.y, r, r * 0.5).fill({ color: 0, alpha: 0.2 });
     }
     // runes
@@ -320,19 +328,19 @@ export class Renderer {
       const r = sim.runes[i], t = this.runeText[i];
       if (!r) { t.visible = false; continue; }
       const col = RUNE_COL[r.type], bob = Math.sin(this.clock * 3 + i) * 5, y = r.y - 26 + bob;
-      d.circle(r.x, r.y, 26 + Math.sin(this.clock * 4) * 3).fill({ color: col, alpha: 0.25 });
+      d.circle(r.x, r.y, 26 + Math.sin(this.clock * 4) * 3).fill({ color: col, alpha: 0.25 }); gl.circle(r.x, y, 46).fill({ color: col, alpha: 0.14 }); gl.circle(r.x, y, 24).fill({ color: col, alpha: 0.25 });
       o.poly([r.x, y - 20, r.x + 15, y, r.x, y + 20, r.x - 15, y]).fill({ color: col }).stroke({ width: 3, color: INKH });
       o.poly([r.x, y - 12, r.x + 6, y - 2, r.x - 6, y - 2]).fill({ color: 0xffffff, alpha: 0.6 });
       t.visible = true; t.text = RUNE_NAME[r.type]; t.style.fill = col; t.position.set(r.x, r.y - 62 + bob);
     }
     // bolts, rings, particles
     for (let i = this.bolts.length - 1; i >= 0; i--) { const b = this.bolts[i]; b.life -= dt; if (b.life <= 0) { this.bolts.splice(i, 1); continue; } const mx = (b.x1 + b.x2) / 2 + (Math.random() - 0.5) * 40, my = (b.y1 + b.y2) / 2 + (Math.random() - 0.5) * 40; o.moveTo(b.x1, b.y1 - 30).lineTo(mx, my - 20).lineTo(b.x2, b.y2 - 10).stroke({ width: 4, color: b.color, alpha: b.life * 5 }); }
-    for (let i = this.rings.length - 1; i >= 0; i--) { const r = this.rings[i]; r.life -= dt; if (r.life <= 0) { this.rings.splice(i, 1); continue; } const k = 1 - r.life / r.max, e = 1 - (1 - k) * (1 - k), rad = r.r0 + (r.r1 - r.r0) * e; if (r.fill) d.circle(r.x, r.y, rad).fill({ color: r.color, alpha: (1 - k) * 0.3 }); d.circle(r.x, r.y, rad).stroke({ width: r.w * (1 - k) + 1, color: r.color, alpha: 1 - k }); }
+    for (let i = this.rings.length - 1; i >= 0; i--) { const r = this.rings[i]; r.life -= dt; if (r.life <= 0) { this.rings.splice(i, 1); continue; } const k = 1 - r.life / r.max, e = 1 - (1 - k) * (1 - k), rad = r.r0 + (r.r1 - r.r0) * e; if (r.fill) d.circle(r.x, r.y, rad).fill({ color: r.color, alpha: (1 - k) * 0.3 }); d.circle(r.x, r.y, rad).stroke({ width: r.w * (1 - k) + 1, color: r.color, alpha: 1 - k }); gl.circle(r.x, r.y, rad).stroke({ width: r.w * 2.2 * (1 - k) + 2, color: r.color, alpha: (1 - k) * 0.45 }); }
     for (let i = this.parts.length - 1; i >= 0; i--) {
       const p = this.parts[i]; p.life -= dt; if (p.life <= 0) { this.parts[i] = this.parts[this.parts.length - 1]; this.parts.pop(); continue; }
       p.x += p.vx * dt; p.y += p.vy * dt; p.z += p.vz * dt; p.vz -= 420 * dt; if (p.z < 0) { p.z = 0; p.vz *= -0.4; p.vx *= 0.6; p.vy *= 0.6; }
       const k = p.life / p.max, s = p.size * (0.4 + k * 0.6);
-      if (p.sq) o.rect(p.x - s, p.y - p.z - s, s * 2, s * 2).fill({ color: p.color, alpha: Math.min(1, k * 2) }); else o.circle(p.x, p.y - p.z, s).fill({ color: p.color, alpha: Math.min(1, k * 2) });
+      if (p.sq) o.rect(p.x - s, p.y - p.z - s, s * 2, s * 2).fill({ color: p.color, alpha: Math.min(1, k * 2) }); else { o.circle(p.x, p.y - p.z, s * 0.6).fill({ color: p.color, alpha: Math.min(1, k * 2) }); gl.circle(p.x, p.y - p.z, s * 2.2).fill({ color: p.color, alpha: Math.min(1, k * 2) * 0.3 }); }
     }
     for (let i = this.floats.length - 1; i >= 0; i--) { const f = this.floats[i]; f.life -= dt; if (f.life <= 0) { f.t.visible = false; this.textPool.push(f.t); this.floats.splice(i, 1); continue; } f.y += f.vy * dt; f.vy *= 1 - dt * 1.5; f.t.position.set(f.x, f.y); f.t.alpha = Math.min(1, f.life / f.max * 3); }
 
@@ -359,7 +367,7 @@ export class Renderer {
   private drawFog(sim: Sim) {
     const cv = this.fogCv, c = cv.getContext('2d')!, s = 150 / M.w;
     c.globalCompositeOperation = 'source-over'; c.clearRect(0, 0, cv.width, cv.height);
-    c.fillStyle = 'rgba(14,12,30,0.62)'; c.fillRect(0, 0, cv.width, cv.height);
+    c.fillStyle = 'rgba(3,5,14,0.74)'; c.fillRect(0, 0, cv.width, cv.height);
     c.globalCompositeOperation = 'destination-out';
     const hole = (x: number, y: number, r: number) => { const g = c.createRadialGradient(x * s, y * s, r * s * 0.72, x * s, y * s, r * s); g.addColorStop(0, 'rgba(0,0,0,1)'); g.addColorStop(1, 'rgba(0,0,0,0)'); c.fillStyle = g; c.beginPath(); c.arc(x * s, y * s, r * s, 0, 6.3); c.fill(); };
     for (const src of this.sources) if (src.high) hole(src.x, src.y, src.r);

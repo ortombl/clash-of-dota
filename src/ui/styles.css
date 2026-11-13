@@ -177,3 +177,26 @@ body.narrow #top { left: calc(var(--u) * 8); transform: none; align-items: flex-
 body.narrow .deck { grid-template-columns: 1fr; } body.narrow .menu-hero { display: none; } body.narrow .title h1 { font-size: calc(var(--u) * 60); }
 body.narrow #items { grid-template-columns: repeat(3, calc(var(--u) * 24)); } body.narrow #aimhint { bottom: calc(var(--u) * 330); }
 body.narrow #abilrow { flex-wrap: wrap; } body.narrow #items { margin-left: 0; grid-template-columns: repeat(6, calc(var(--u) * 28)); }
+
+/* ---------- dark "forged" HUD skin to match the realistic battlefield ---------- */
+.panel { background: linear-gradient(#2b303b, #14171d); border-color: #08090c; color: #e9dfc6; box-shadow: inset 0 0 0 1px #8a7440, inset 0 1px 0 2px rgba(255,255,255,.06), 0 6px 18px rgba(0,0,0,.7); }
+.btn { box-shadow: inset 0 0 0 1px rgba(255,255,255,.25), 0 3px 0 #08090c, 0 6px 14px rgba(0,0,0,.5); border-color: #08090c; background: linear-gradient(#f0c95a, #b98a1e); }
+.btn.blue { background: linear-gradient(#4aa8ff, #1c58b0); } .btn.ember { background: linear-gradient(#ff8a3a, #b03a10); } .btn.plain, #sysbtns .btn { background: linear-gradient(#444b59, #23272f); color: #e9dfc6; }
+#timer { color: #f3e6c0; } .pip, .anc { border-color: #08090c; }
+#portrait { background: radial-gradient(circle at 40% 30%, #3f5f86, #10161f); border-color: #08090c; box-shadow: inset 0 0 0 1px #8a7440; }
+.bar2 { background: #0c0d11; border-color: #08090c; } .abil { border-color: #08090c; box-shadow: inset 0 0 0 1px #8a7440, 0 3px 8px rgba(0,0,0,.6); }
+.slot { background: #0f1116; border-color: #08090c; box-shadow: inset 0 0 0 1px #4a4230; }
+#goldrow { border-top-color: rgba(138,116,64,.5); } #gold { color: #2a1c00; border-color: #08090c; }
+#essence { border-color: #08090c; box-shadow: inset 0 0 0 1px #8a7440, 0 4px 12px rgba(0,0,0,.6); }
+#essence i { background: linear-gradient(#ff7af0, #9a1c9a); box-shadow: 0 0 14px #ff5ae8; }
+.card, .card.troop, .card.champion, .card.spell, .card.building { border-color: #08090c; color: #eadfc4; box-shadow: inset 0 0 0 1px #6f5f36, 0 6px 14px rgba(0,0,0,.65); }
+.card.troop, .card.champion { background: linear-gradient(#2f4866 0, #16202e 64%, #191c23 64%); } .card.spell { background: linear-gradient(#5a2f66 0, #26142e 64%, #191c23 64%); } .card.building { background: linear-gradient(#5a4a30 0, #2a2216 64%, #191c23 64%); }
+.card.champion { box-shadow: inset 0 0 0 2px #d9a93a, 0 6px 14px rgba(0,0,0,.65); } .card .cost { border-color: #08090c; background: radial-gradient(circle at 35% 30%, #ff9af2, #a01ca0); }
+.card .ty { opacity: .6; } .card .key { color: #fff; }
+#minimap { background: #10161a; } #tip { background: #0d0e13; }
+.hpick { color: #eadfc4; background: radial-gradient(circle at 50% 35%, #3f5f86, #10161f); border-color: #08090c; } .hpick.sel { background: radial-gradient(circle at 50% 35%, #6f97c8, #1a2636); }
+.seg { border-color: #08090c; } .seg button { background: #2a2f3a; color: #e9dfc6; } .seg button.on { background: #d9a93a; color: #1d1626; }
+.item { background: #1d212a; border-color: #08090c; color: #e9dfc6; } .item.can { background: #3d3418; box-shadow: inset 0 0 0 1px #d9a93a; } .item .pr { color: #f0c95a; }
+.shop .note { color: #1d1626; } .stats tr:nth-child(odd) { background: rgba(255,255,255,.06); } .stats td:first-child { color: #6ab8ff; } .stats td:last-child { color: #ff9a5a; }
+#tutorial .dots i { background: #3a3f4a; border-color: #08090c; } .keys b { background: #08090c; }
+.screen.menu { background: linear-gradient(115deg, #0c1a30 0 49.6%, #08090c 49.6% 50.4%, #2e0f08 50.4%); }

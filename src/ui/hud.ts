@@ -189,13 +189,13 @@ export class Hud {
   // ------------------------------------------------------------------ minimap
   private paintMiniBg() {
     const cv = this.miniBg = makeCanvas(264, 440), c = cv.getContext('2d')!, s = 264 / M.w;
-    c.fillStyle = '#79b86a'; c.fillRect(0, 0, 264, 440);
-    c.fillStyle = '#c9b88e'; c.fillRect(0, 0, 264, (M.riverY - M.highGround) * s); c.fillStyle = '#9cc4d8'; c.fillRect(0, (M.riverY + M.highGround) * s, 264, 440);
-    c.fillStyle = '#ecdba8'; for (const lx of M.laneX) c.fillRect((lx - 50) * s, 0, 100 * s, 440);
-    c.fillStyle = '#2f73ad'; c.fillRect(0, (M.riverY - M.riverHalf) * s, 264, M.riverHalf * 2 * s);
-    c.fillStyle = '#b98248'; for (const lx of M.laneX) c.fillRect((lx - 60) * s, (M.riverY - M.riverHalf - 6) * s, 120 * s, (M.riverHalf * 2 + 12) * s);
+    c.fillStyle = '#2f4a22'; c.fillRect(0, 0, 264, 440); c.fillStyle = '#463530'; c.fillRect(0, 0, 264, M.riverY * s);
+    c.fillStyle = 'rgba(255,255,255,0.07)'; c.fillRect(0, 0, 264, (M.riverY - M.highGround) * s); c.fillRect(0, (M.riverY + M.highGround) * s, 264, 440);
+    c.fillStyle = '#7a6648'; for (const lx of M.laneX) c.fillRect((lx - 50) * s, 0, 100 * s, 440);
+    c.fillStyle = '#1c4f66'; c.fillRect(0, (M.riverY - M.riverHalf) * s, 264, M.riverHalf * 2 * s);
+    c.fillStyle = '#8a8070'; for (const lx of M.laneX) c.fillRect((lx - 60) * s, (M.riverY - M.riverHalf - 6) * s, 120 * s, (M.riverHalf * 2 + 12) * s);
     c.fillStyle = '#3a3344'; c.beginPath(); c.arc(M.bossPit.x * s, M.bossPit.y * s, 16, 0, 7); c.fill();
-    c.fillStyle = '#8a6a3c'; for (const cp of CAMPS) { c.beginPath(); c.arc(cp.x * s, cp.y * s, 9, 0, 7); c.fill(); }
+    c.fillStyle = '#5a4630'; for (const cp of CAMPS) { c.beginPath(); c.arc(cp.x * s, cp.y * s, 9, 0, 7); c.fill(); }
   }
   private drawMini(sim: Sim) {
     const c = this.mini.getContext('2d')!, s = 264 / M.w, pt = this.game.team, r = this.game.renderer;
